@@ -183,6 +183,7 @@ do_snapshots () # properties, flags, snapname, oldglob, [targets...]
 		KEEP="$opt_keep"
 
 		# ASSERT: The old snapshot list is sorted by increasing age.
+                print_log debug "List of old snapshots $SNAPSHOTS_OLD"
 		for jj in $SNAPSHOTS_OLD
 		do
 			# Check whether this is an old snapshot of the filesystem.
@@ -373,14 +374,16 @@ ZFS_LIST=$(env LC_ALL=C zfs list -H -t filesystem,volume -s name \
 
 if [ -n "$opt_fast_zfs_list" ]
 then
+	print_log debug "Not using fast method."
 	SNAPSHOTS_OLD=$(env LC_ALL=C zfs list -H -t snapshot -o com.sun:auto-snapshot-label,name -s com.sun:auto-snapshot-label | \
 		grep ^$opt_label | grep $opt_prefix | \
 		awk '{ print substr( $0, length($0) - 14, length($0) ) " " $0}' | \
 		sort -r -k1,1 -k2,2 | \
-		awk '{ print substr( $0, 17, length($0) )}') \
+		awk '{ print $3 }') \
 	  || { print_log error "zfs list $?: $SNAPSHOTS_OLD"; exit 137; }
 else
-	SNAPSHOTS_OLD=$(env LC_ALL=C zfs list -H -t snapshot -S creation -o name) \
+        print_log debug "Using fast method."
+	SNAPSHOTS_OLD=$(env LC_ALL=C zfs list -H -t snapshot -s com.sun:auto-snapshot-label -S creation -o com.sun:auto-snapshot-label,name | grep ^$opt_label) \
 	  || { print_log error "zfs list $?: $SNAPSHOTS_OLD"; exit 137; }
 fi
 
