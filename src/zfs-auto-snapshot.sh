@@ -383,7 +383,7 @@ then
 	  || { print_log error "zfs list $?: $SNAPSHOTS_OLD"; exit 137; }
 else
         print_log debug "Using fast method."
-	SNAPSHOTS_OLD=$(env LC_ALL=C zfs list -H -t snapshot -s com.sun:auto-snapshot-label -S creation -o com.sun:auto-snapshot-label,name | grep ^$opt_label) \
+	SNAPSHOTS_OLD=$(env LC_ALL=C zfs list -H -t snapshot -s com.sun:auto-snapshot-label -S creation -o com.sun:auto-snapshot-label,name | grep ^$opt_label | cat) \
 	  || { print_log error "zfs list $?: $SNAPSHOTS_OLD"; exit 137; }
 fi
 
